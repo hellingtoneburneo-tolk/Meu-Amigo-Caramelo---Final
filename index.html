@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Amigo Caramelo - Sistema ONG de Proteção Animal</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js for Admin Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* Background minimalista com padronagem lúdica de patinha de 4 dedinhos + coração */
+        .bg-paws {
+            background-color: #FDFBF7;
+            background-image: url("data:image/svg+xml,%3Csvg width='140' height='140' viewBox='0 0 140 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23C17743' fill-opacity='0.08' stroke='%23C17743' stroke-opacity='0.09'%3E%3Cg transform='translate(15, 15) scale(0.65)'%3E%3Cpath d='M 48 85 C 18 63 6 36 22 18 C 36 2 54 14 54 28 C 54 14 74 2 88 18 C 96 28 94 38 88 46' fill='none' stroke-width='6' stroke-linecap='round'/%3E%3Cellipse cx='38' cy='43' rx='5.5' ry='8.5' transform='rotate(-30 38 43)'/%3E%3Cellipse cx='52' cy='30' rx='6' ry='9.5' transform='rotate(-12 52 30)'/%3E%3Cellipse cx='70' cy='31' rx='6' ry='9.5' transform='rotate(12 70 31)'/%3E%3Cellipse cx='84' cy='44' rx='5.5' ry='8.5' transform='rotate(30 84 44)'/%3E%3Cpath d='M 41 64 C 41 53 50 47 61 51 C 72 47 81 53 81 64 C 81 75 71 80 61 80 C 51 80 41 75 41 64 Z'/%3E%3C/g%3E%3Cg transform='translate(85, 85) scale(0.65)'%3E%3Cpath d='M 48 85 C 18 63 6 36 22 18 C 36 2 54 14 54 28 C 54 14 74 2 88 18 C 96 28 94 38 88 46' fill='none' stroke-width='6' stroke-linecap='round'/%3E%3Cellipse cx='38' cy='43' rx='5.5' ry='8.5' transform='rotate(-30 38 43)'/%3E%3Cellipse cx='52' cy='30' rx='6' ry='9.5' transform='rotate(-12 52 30)'/%3E%3Cellipse cx='70' cy='31' rx='6' ry='9.5' transform='rotate(12 70 31)'/%3E%3Cellipse cx='84' cy='44' rx='5.5' ry='8.5' transform='rotate(30 84 44)'/%3E%3Cpath d='M 41 64 C 41 53 50 47 61 51 C 72 47 81 53 81 64 C 81 75 71 80 61 80 C 51 80 41 75 41 64 Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        .hide { display: none !important; }
+        .toast { transition: all 0.3s ease; transform: translateX(120%); opacity: 0; }
+        .toast.show { transform: translateX(0); opacity: 1; }
+        .glass-panel { background: rgba(253, 251, 247, 0.96); backdrop-filter: blur(12px); }
+        .image-preview { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #F4ECE1; }
+        ::-webkit-scrollbar-thumb { background: #C17743; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #A66233; }
+
+        .preset-btn.active {
+            background-color: #C17743 !important;
+            color: #ffffff !important;
+            border-color: #A66233 !important;
+        }
+    </style>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { 
+                        primary: { DEFAULT: '#C17743', dark: '#A66233', light: '#E8A373' },
+                        secondary: { DEFAULT: '#27272A', dark: '#18181B' },
+                        beige: { light: '#FDFBF7', DEFAULT: '#F4ECE1', dark: '#E5D5C5' }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="text-gray-800 h-screen flex flex-col overflow-hidden bg-paws">
+
+    <!-- Header / Navbar -->
+    <header class="bg-white/90 backdrop-blur-md border-b border-beige-dark shadow-sm z-40 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-3 text-primary font-bold text-xl cursor-pointer" onclick="navigateHome()">
+                    <div class="w-10 h-10 bg-beige rounded-full flex items-center justify-center text-primary shadow-inner">
+                        <i class="fa-solid fa-dog text-xl"></i>
+                    </div>
+                    <span class="tracking-tight text-secondary font-extrabold text-lg sm:text-xl">Meu Amigo <span class="text-primary">Caramelo</span></span>
+                </div>
+                
+                <!-- Nav Links -->
+                <nav id="nav-links" class="hidden md:flex space-x-6 items-center">
+                    <!-- Dinâmico via JS -->
+                </nav>
+
+                <div class="hidden md:flex items-center gap-4">
+                    <span id="user-greeting" class="text-sm font-semibold text-gray-700 hidden"></span>
+                    <button id="btn-logout" class="hidden text-sm bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 px-3 py-1.5 rounded-lg transition font-medium items-center gap-2" onclick="logout()">
+                        <i class="fa-solid fa-right-from-bracket"></i> Sair
+                    </button>
+                </div>
+
+                <!-- Botão Hambúrguer (Mobile) -->
+                <button id="btn-mobile-menu" class="md:hidden hidden w-10 h-10 items-center justify-center rounded-xl bg-beige text-primary-dark border border-beige-dark text-lg" onclick="toggleMobileMenu()" aria-label="Abrir menu">
+                    <i class="fa-solid fa-bars" id="mobile-menu-icon"></i>
+                </button>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="md:hidden bg-white border-t p-4 flex flex-col gap-3 hidden shadow-lg absolute w-full left-0 z-50">
+            <!-- Dinâmico via JS -->
+        </div>
+    </header>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col gap-2"></div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex items-center justify-center hide p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm border border-beige-dark">
+            <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 text-center mb-1" id="confirm-title">Confirmar Ação</h3>
+            <p class="text-gray-600 text-sm text-center mb-6" id="confirm-msg">Tem certeza que deseja continuar?</p>
+            <div class="flex justify-end gap-3">
+                <button onclick="closeConfirm()" class="w-full py-2.5 text-gray-600 hover:bg-gray-100 rounded-xl transition font-semibold text-sm">Cancelar</button>
+                <button id="confirm-btn-yes" class="w-full py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 transition font-semibold text-sm shadow-md">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto relative">
+        
+        <!-- ================= VIEW: LOGIN / REGISTER ================= -->
+        <section id="view-auth" class="min-h-full flex items-center justify-center p-4">
+            <div class="glass-panel w-full max-w-md rounded-3xl shadow-2xl p-8 border border-beige-dark relative overflow-hidden">
+                <!-- Elementos Decorativos -->
+                <i class="fa-solid fa-bone absolute top-6 right-6 text-beige-dark text-4xl rotate-45 opacity-40"></i>
+                <i class="fa-solid fa-paw absolute bottom-6 left-6 text-beige-dark text-5xl -rotate-12 opacity-40"></i>
+
+                <div class="text-center mb-6 relative z-10">
+                    <div class="w-20 h-20 bg-beige text-primary rounded-full flex items-center justify-center mx-auto mb-3 text-4xl shadow-inner border border-beige-dark">
+                        <i class="fa-solid fa-paw"></i>
+                    </div>
+                    <h2 class="text-2xl font-extrabold text-secondary" id="auth-title">Entrar na Plataforma</h2>
+                    <p class="text-gray-600 text-xs mt-1">Plataforma de Adoção e Apadrinhamento 🐾</p>
+                </div>
+
+                <form id="auth-form" class="space-y-4 relative z-10" onsubmit="handleAuth(event)">
+                    <div id="auth-name-group" class="hide">
+                        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Nome Completo</label>
+                        <input type="text" id="auth-name" class="w-full px-4 py-2.5 rounded-xl border border-beige-dark bg-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">E-mail</label>
+                        <input type="email" id="auth-email" required placeholder="exemplo@email.com" class="w-full px-4 py-2.5 rounded-xl border border-beige-dark bg-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Senha</label>
+                        <input type="password" id="auth-password" required placeholder="••••••••" class="w-full px-4 py-2.5 rounded-xl border border-beige-dark bg-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition text-sm">
+                    </div>
+                    <button type="submit" id="auth-submit" class="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-xl transition shadow-lg mt-2">
+                        Entrar
+                    </button>
+                </form>
+
+                <div class="mt-6 text-center text-xs relative z-10">
+                    <span class="text-gray-600" id="auth-toggle-text">Ainda não tem conta?</span>
+                    <button onclick="toggleAuthMode()" id="auth-toggle-btn" class="text-primary font-bold hover:underline ml-1">Cadastre-se</button>
+                </div>
+                
+                <div class="mt-6 p-3 bg-beige/80 text-secondary text-xs rounded-xl border border-beige-dark relative z-10 text-center">
+                    <p class="font-bold mb-1"><i class="fa-solid fa-key text-primary"></i> Acesso Demonstrativo (Admin):</p>
+                    <p class="text-gray-600">E-mail: <strong class="text-secondary">admin@ong.com</strong> | Senha: <strong class="text-secondary">admin</strong></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= VIEW: ADMIN DASHBOARD ================= -->
+        <section id="view-admin-dashboard" class="hide p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-beige-dark pb-4">
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold text-secondary">Painel de Controle ONG</h1>
+                    <p class="text-xs sm:text-sm text-gray-500">Acompanhamento detalhado de adoções, doações e gestão animal.</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="openAnimalForm()" class="bg-primary hover:bg-primary-dark text-white text-sm px-4 py-2 rounded-xl font-semibold shadow transition flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Novo Animal
+                    </button>
+                    <button onclick="openCampaignForm()" class="bg-secondary hover:bg-secondary-dark text-white text-sm px-4 py-2 rounded-xl font-semibold shadow transition flex items-center gap-2">
+                        <i class="fa-solid fa-bullhorn"></i> Nova Campanha
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Cards de Métricas Principais -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white rounded-2xl shadow-sm p-5 border border-beige-dark flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">Adoções Concluídas</p>
+                        <h3 class="text-2xl font-extrabold text-secondary mt-1" id="dash-adoptions">0</h3>
+                        <p class="text-xs text-green-600 mt-1 font-medium"><i class="fa-solid fa-arrow-trend-up"></i> <span id="dash-adoptions-rate">0%</span> de aprovação</p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 text-green-700 rounded-2xl flex items-center justify-center text-xl"><i class="fa-solid fa-house-heart"></i></div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm p-5 border border-beige-dark flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">Total Arrecadado (PIX)</p>
+                        <h3 class="text-2xl font-extrabold text-secondary mt-1" id="dash-raised">R$ 0,00</h3>
+                        <p class="text-xs text-gray-500 mt-1 font-medium">Em campanhas ativas</p>
+                    </div>
+                    <div class="w-12 h-12 bg-beige text-primary rounded-2xl flex items-center justify-center text-xl"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm p-5 border border-beige-dark flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">Apadrinhamentos Ativos</p>
+                        <h3 class="text-2xl font-extrabold text-secondary mt-1" id="dash-sponsors">0</h3>
+                        <p class="text-xs text-blue-600 mt-1 font-medium"><i class="fa-solid fa-rotate-right"></i> Recorrência ativa</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center text-xl"><i class="fa-solid fa-handshake-angle"></i></div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm p-5 border border-beige-dark flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">Receita Mensal Apadrinhamento</p>
+                        <h3 class="text-2xl font-extrabold text-secondary mt-1" id="dash-sponsors-rev">R$ 0,00</h3>
+                        <p class="text-xs text-gray-500 mt-1 font-medium">Previsão mensal</p>
+                    </div>
+                    <div class="w-12 h-12 bg-amber-100 text-amber-700 rounded-2xl flex items-center justify-center text-xl"><i class="fa-solid fa-piggy-bank"></i></div>
+                </div>
+            </div>
+
+            <!-- Gráficos de Desempenho e Estatísticas -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Gráfico 1: Histórico Semestral -->
+                <div class="lg:col-span-2 bg-white rounded-2xl p-5 shadow-sm border border-beige-dark">
+                    <h3 class="text-sm font-bold text-secondary uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-primary"></i> Fluxo do Sistema (Últimos 6 Meses)
+                    </h3>
+                    <div class="relative h-64">
+                        <canvas id="chart-fluxo"></canvas>
+                    </div>
+                </div>
+
+                <!-- Gráfico 2: Distribuição por Espécie -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-beige-dark">
+                    <h3 class="text-sm font-bold text-secondary uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-pie text-primary"></i> Animais na ONG por Espécie
+                    </h3>
+                    <div class="relative h-64 flex items-center justify-center">
+                        <canvas id="chart-especies"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabelas Gerenciais -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Gerenciador de Solicitações de Adoção -->
+                <div class="bg-white rounded-2xl shadow-sm border border-beige-dark p-5">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-base font-bold text-secondary flex items-center gap-2">
+                            <i class="fa-solid fa-clipboard-list text-primary"></i> Solicitações de Adoção
+                        </h3>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs bg-beige text-primary-dark font-bold px-2.5 py-1 rounded-full" id="dash-pending-count">0 pendentes</span>
+                            <button onclick="exportCSV('adoptions')" class="text-[11px] bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 font-bold px-2.5 py-1 rounded-lg transition flex items-center gap-1">
+                                <i class="fa-solid fa-file-csv"></i> Exportar CSV
+                            </button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-gray-600">
+                            <thead class="bg-beige/50 text-gray-700 uppercase font-bold">
+                                <tr>
+                                    <th class="p-3">Adotante</th>
+                                    <th class="p-3">Animal</th>
+                                    <th class="p-3">Moradia</th>
+                                    <th class="p-3">Status</th>
+                                    <th class="p-3 text-right">Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dash-adoption-list" class="divide-y divide-beige-dark">
+                                <!-- Gerado via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Doações PIX Recentes -->
+                <div class="bg-white rounded-2xl shadow-sm border border-beige-dark p-5">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-base font-bold text-secondary flex items-center gap-2">
+                            <i class="fa-brands fa-pix text-green-600"></i> Últimas Doações de Campanhas
+                        </h3>
+                        <button onclick="exportCSV('donations')" class="text-[11px] bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 font-bold px-2.5 py-1 rounded-lg transition flex items-center gap-1">
+                            <i class="fa-solid fa-file-csv"></i> Exportar CSV
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-gray-600">
+                            <thead class="bg-beige/50 text-gray-700 uppercase font-bold">
+                                <tr>
+                                    <th class="p-3">Doador</th>
+                                    <th class="p-3">Campanha</th>
+                                    <th class="p-3">Data</th>
+                                    <th class="p-3 text-right">Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dash-donation-list" class="divide-y divide-beige-dark">
+                                <!-- Gerado via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Utilitário de Testes -->
+            <div class="flex justify-center pt-2 pb-4">
+                <button onclick="resetDemoData()" class="text-[11px] text-gray-400 hover:text-red-600 font-semibold transition">
+                    🔄 Resetar Dados de Teste
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= VIEW: ADMIN ANIMALS ================= -->
+        <section id="view-admin-animals" class="hide p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
+            <div class="flex justify-between items-center border-b border-beige-dark pb-4">
+                <div>
+                    <h1 class="text-2xl font-extrabold text-secondary">Gestão do Plantel de Animais</h1>
+                    <p class="text-xs text-gray-500">Cadastre e atualize fichas médicas, prontuários e fotos.</p>
+                </div>
+                <button onclick="openAnimalForm()" class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-xl text-sm font-bold shadow transition flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i> Novo Animal
+                </button>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-sm border border-beige-dark overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs sm:text-sm">
+                        <thead class="bg-beige/60 text-gray-700 font-bold uppercase text-xs">
+                            <tr>
+                                <th class="p-3 sm:p-4">Foto</th>
+                                <th class="p-3 sm:p-4">Nome</th>
+                                <th class="p-3 sm:p-4">Espécie / Raça</th>
+                                <th class="p-3 sm:p-4">Idade / Porte</th>
+                                <th class="p-3 sm:p-4">Status</th>
+                                <th class="p-3 sm:p-4 text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-animal-table" class="divide-y divide-beige-dark">
+                            <!-- Gerado via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= VIEW: ADMIN CAMPAIGNS ================= -->
+        <section id="view-admin-campaigns" class="hide p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
+             <div class="flex justify-between items-center border-b border-beige-dark pb-4">
+                <div>
+                    <h1 class="text-2xl font-extrabold text-secondary">Gestão de Campanhas</h1>
+                    <p class="text-xs text-gray-500">Crie metas para castração, vacinação e mantimentos.</p>
+                </div>
+                <button onclick="openCampaignForm()" class="bg-secondary hover:bg-secondary-dark text-white px-4 py-2 rounded-xl text-sm font-bold shadow transition flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i> Nova Campanha
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="admin-campaign-grid">
+                <!-- Gerado via JS -->
+            </div>
+        </section>
+
+        <!-- ================= VIEW: USER CATALOG ================= -->
+        <section id="view-user-catalog" class="hide p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
+            <div class="text-center max-w-2xl mx-auto my-4">
+                <h1 class="text-3xl sm:text-4xl font-extrabold text-secondary mb-2">Encontre Seu Amigo Caramelo</h1>
+                <p class="text-gray-600 text-sm">Cães, gatos, coelhos, aves e pequenos pets resgatados esperando por um lar cheio de carinho ou por seu apadrinhamento.</p>
+            </div>
+
+            <!-- Filtros de Busca -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-beige-dark flex flex-wrap gap-4 items-center justify-between">
+                <div class="flex flex-wrap gap-3 items-center w-full sm:w-auto">
+                    <span class="font-bold text-xs text-gray-700 uppercase flex items-center gap-1">
+                        <i class="fa-solid fa-filter text-primary"></i> Filtrar:
+                    </span>
+                    <div class="relative w-full sm:w-64">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                        <input type="text" id="filter-search" placeholder="Buscar por nome ou raça..." oninput="renderUserCatalog()" class="w-full border border-beige-dark rounded-xl pl-8 pr-3 py-2 text-xs font-semibold text-gray-700 bg-white outline-none focus:ring-2 focus:ring-primary">
+                    </div>
+                    <select id="filter-species" class="border border-beige-dark rounded-xl px-3 py-2 text-xs font-semibold text-gray-700 bg-white outline-none focus:ring-2 focus:ring-primary" onchange="renderUserCatalog()">
+                        <option value="all">Todas as Espécies</option>
+                        <option value="Cachorro">Cachorros</option>
+                        <option value="Gato">Gatos</option>
+                        <option value="Coelho">Coelhos</option>
+                        <option value="Ave">Aves</option>
+                        <option value="Roedor">Roedores / Exóticos</option>
+                    </select>
+                    <select id="filter-size" class="border border-beige-dark rounded-xl px-3 py-2 text-xs font-semibold text-gray-700 bg-white outline-none focus:ring-2 focus:ring-primary" onchange="renderUserCatalog()">
+                        <option value="all">Todos os Portes</option>
+                        <option value="Pequeno">Porte Pequeno</option>
+                        <option value="Médio">Porte Médio</option>
+                        <option value="Grande">Porte Grande</option>
+                    </select>
+                </div>
+                <div class="text-xs text-gray-500 font-medium" id="catalog-count-badge">
+                    Exibindo todos os animais disponíveis
+                </div>
+            </div>
+
+            <!-- Catalog Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="user-catalog-grid">
+                <!-- Gerado via JS -->
+            </div>
+        </section>
+
+        <!-- ================= VIEW: USER CAMPAIGNS ================= -->
+        <section id="view-user-campaigns" class="hide p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
+             <div class="text-center max-w-2xl mx-auto my-4">
+                <h1 class="text-3xl sm:text-4xl font-extrabold text-secondary mb-2">Campanhas Ativas da ONG</h1>
+                <p class="text-gray-600 text-sm">Ajude-nos a manter o tratamento, vacinação e alimentação em dia através de doações diretas via PIX.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="user-campaigns-grid">
+                <!-- Gerado via JS -->
+            </div>
+        </section>
+
+        <!-- ================= VIEW: USER GODCHILDREN ================= -->
+        <section id="view-user-godchildren" class="hide p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
+            <div class="border-b border-beige-dark pb-4">
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-secondary">Meus Afilhados 🐾</h1>
+                <p class="text-xs sm:text-sm text-gray-600">Acompanhe os animais que você apoia mensalmente e simule novas contribuições.</p>
+            </div>
+            
+            <div id="godchildren-empty" class="hide text-center py-12 bg-white rounded-2xl border border-beige-dark shadow-sm">
+                <div class="w-16 h-16 bg-beige rounded-full flex items-center justify-center mx-auto mb-3 text-primary text-2xl">
+                    <i class="fa-solid fa-heart-crack"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-800">Você ainda não possui afilhados</h3>
+                <p class="text-gray-500 text-xs mt-1 max-w-md mx-auto">Ao apadrinhar um pet, você ajuda com alimentação, vacinas e medicação até que ele seja adotado.</p>
+                <button onclick="navigate('view-user-catalog')" class="mt-4 bg-primary text-white font-bold text-xs px-5 py-2.5 rounded-xl hover:bg-primary-dark transition shadow">
+                    Explorar Animais para Apadrinhar
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="user-godchildren-grid">
+                <!-- Gerado via JS -->
+            </div>
+        </section>
+
+        <!-- ================= VIEW: USER ADOPTION REQUESTS ================= -->
+        <section id="view-user-requests" class="hide p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
+            <div class="border-b border-beige-dark pb-4">
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-secondary">Minhas Solicitações 📋</h1>
+                <p class="text-xs sm:text-sm text-gray-600">Acompanhe o andamento dos seus pedidos de adoção.</p>
+            </div>
+
+            <div id="requests-empty" class="hide text-center py-12 bg-white rounded-2xl border border-beige-dark shadow-sm">
+                <div class="w-16 h-16 bg-beige rounded-full flex items-center justify-center mx-auto mb-3 text-primary text-2xl">
+                    <i class="fa-solid fa-clipboard-list"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-800">Você ainda não enviou solicitações de adoção</h3>
+                <p class="text-gray-500 text-xs mt-1 max-w-md mx-auto">Encontre um amigo no catálogo e preencha o questionário de adoção responsável.</p>
+                <button onclick="navigate('view-user-catalog')" class="mt-4 bg-primary text-white font-bold text-xs px-5 py-2.5 rounded-xl hover:bg-primary-dark transition shadow">
+                    Explorar Animais para Adotar
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="user-requests-grid">
+                <!-- Gerado via JS -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ================= MODALS ================= -->
+
+    <!-- Modal Admin: Cadastrar / Editar Animal -->
+    <div id="modal-animal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hide overflow-y-auto p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl my-auto border border-beige-dark">
+            <div class="flex justify-between items-center p-5 border-b border-beige-dark">
+                <h2 class="text-lg font-bold text-secondary" id="modal-animal-title">Novo Cadastramento de Pet</h2>
+                <button onclick="closeModal('modal-animal')" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <form id="form-animal" onsubmit="saveAnimal(event)" class="p-5 space-y-4">
+                <input type="hidden" id="animal-id">
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Nome do Pet</label>
+                        <input type="text" id="animal-name" required placeholder="Ex: Mel, Thor..." class="w-full px-3 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-primary text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Espécie</label>
+                        <select id="animal-species" required class="w-full px-3 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-primary text-sm">
+                            <option value="Cachorro">Cachorro</option>
+                            <option value="Gato">Gato</option>
+                            <option value="Coelho">Coelho</option>
+                            <option value="Ave">Ave</option>
+                            <option value="Roedor">Roedor / Exótico</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Raça / Mistura</label>
+                        <input type="text" id="animal-breed" placeholder="SRD, Poodle, Calopsita..." class="w-full px-3 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-primary text-sm">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Idade (Anos)</label>
+                        <input type="number" step="0.1" id="animal-age" required placeholder="Ex: 2" class="w-full px-3 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-primary text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Sexo</label>
+                        <select id="animal-sex" required class="w-full px-3 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-primary text-sm">
+                            <option value="Macho">Macho</option>
+                            <option value="Fêmea">Fêmea</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Porte</label>
+                        <select id="animal-size" required class="w-full px-3 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-primary text-sm">
+                            <option value="Pequeno">Pequeno</option>
+                            <option value="Médio">Médio</option>
+                            <option value="Grande">Grande</option>
+                        </select>
+                    </div>
+                    <div>
+                         <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Status Atual</label>
+                        <select id="animal-status" required class="w-full px-3 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-primary text-sm">
+                            <option value="Disponível">Disponível para Adoção</option>
+                            <option value="Em Tratamento">Em Tratamento Clínico</option>
+                            <option value="Adotado">Adotado</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Histórico de Saúde & Observações Veterinárias</label>
+                    <textarea id="animal-history" rows="3" required placeholder="Castrado, vacinado (V10, Antirrábica), vermifugado, sociável com outros animais..." class="w-full px-3 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-primary text-sm"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Fotos do Pet (Upload do Computador)</label>
+                    <input type="file" id="animal-photos" accept="image/*" multiple class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-beige file:text-primary hover:file:bg-beige-dark transition">
+                    <div id="animal-photo-preview" class="flex flex-wrap gap-2 mt-3"></div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t border-beige-dark">
+                    <button type="button" onclick="closeModal('modal-animal')" class="px-4 py-2 border rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-100">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary-dark transition shadow">Salvar Registro</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Admin: Cadastrar / Editar Campanha -->
+    <div id="modal-campaign" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hide p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-beige-dark">
+            <div class="flex justify-between items-center p-5 border-b border-beige-dark">
+                <h2 class="text-lg font-bold text-secondary" id="modal-campaign-title">Nova Campanha Financeira</h2>
+                <button onclick="closeModal('modal-campaign')" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <form id="form-campaign" onsubmit="saveCampaign(event)" class="p-5 space-y-4">
+                <input type="hidden" id="camp-id">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Título da Campanha</label>
+                    <input type="text" id="camp-title" required placeholder="Ex: Mutirão de Castração do Bairro..." class="w-full px-3 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-secondary text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Tipo de Campanha</label>
+                    <select id="camp-type" required class="w-full px-3 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-secondary text-sm">
+                        <option value="Castração">Mutirão de Castração</option>
+                        <option value="Vacinação">Campanha de Vacinação</option>
+                        <option value="Arrecadação Geral">Alimentação & Ração</option>
+                        <option value="Cirurgia Emergencial">Tratamento / Cirurgia Emergencial</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Descrição e Justificativa</label>
+                    <textarea id="camp-desc" rows="3" required placeholder="Objetivos e destinação dos recursos arrecadados..." class="w-full px-3 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-secondary text-sm"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Meta Financeira (R$)</label>
+                        <input type="number" step="0.01" id="camp-goal" required placeholder="3000.00" class="w-full px-3 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-secondary text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Data Limite</label>
+                        <input type="date" id="camp-date" required class="w-full px-3 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-secondary text-sm">
+                    </div>
+                </div>
+                <div class="flex justify-end gap-3 pt-4 border-t border-beige-dark">
+                    <button type="button" onclick="closeModal('modal-campaign')" class="px-4 py-2 border rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-100">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-secondary text-white rounded-xl text-xs font-bold hover:bg-secondary-dark transition shadow">Salvar Campanha</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Usuário: Detalhes do Animal -->
+    <div id="modal-animal-details" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[55] flex items-center justify-center hide p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col md:flex-row relative border border-beige-dark">
+            <button onclick="closeModal('modal-animal-details')" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 bg-white/80 rounded-full w-9 h-9 flex items-center justify-center shadow z-10">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            
+            <div class="md:w-1/2 bg-beige/40 flex items-center justify-center p-4">
+                <img id="detail-photo" src="" alt="Foto" class="w-full h-auto max-h-[420px] object-cover rounded-2xl shadow">
+            </div>
+            
+            <div class="md:w-1/2 p-6 sm:p-8 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span id="detail-status" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider"></span>
+                        <span id="detail-species-badge" class="text-xs bg-beige text-primary-dark font-bold px-3 py-1 rounded-full"></span>
+                    </div>
+                    <h2 id="detail-name" class="text-3xl font-extrabold text-secondary"></h2>
+                    <p id="detail-breed" class="text-gray-500 font-medium text-sm mb-6"></p>
+                    
+                    <div class="grid grid-cols-2 gap-3 mb-6">
+                        <div class="bg-beige/50 p-3 rounded-xl border border-beige-dark"><p class="text-[10px] text-gray-500 uppercase font-bold">Idade</p><p id="detail-age" class="font-bold text-gray-800 text-sm"></p></div>
+                        <div class="bg-beige/50 p-3 rounded-xl border border-beige-dark"><p class="text-[10px] text-gray-500 uppercase font-bold">Porte</p><p id="detail-size" class="font-bold text-gray-800 text-sm"></p></div>
+                        <div class="bg-beige/50 p-3 rounded-xl border border-beige-dark"><p class="text-[10px] text-gray-500 uppercase font-bold">Sexo</p><p id="detail-sex" class="font-bold text-gray-800 text-sm"></p></div>
+                        <div class="bg-beige/50 p-3 rounded-xl border border-beige-dark"><p class="text-[10px] text-gray-500 uppercase font-bold">Identificador</p><p id="detail-id" class="font-bold text-gray-800 text-sm"></p></div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h4 class="font-bold text-gray-800 text-sm mb-1"><i class="fa-solid fa-stethoscope text-primary"></i> Saúde & Histórico:</h4>
+                        <p id="detail-history" class="text-gray-600 text-xs leading-relaxed bg-gray-50 p-3 rounded-xl border"></p>
+                    </div>
+                </div>
+                
+                <div class="flex gap-3 pt-4 border-t border-beige-dark">
+                    <button id="btn-adopt" onclick="openAdoptForm()" class="flex-1 bg-primary hover:bg-primary-dark text-white py-3 rounded-xl font-bold shadow text-sm transition">
+                        Quero Adotar
+                    </button>
+                    <button id="btn-sponsor" onclick="openSponsorForm()" class="flex-1 bg-beige hover:bg-beige-dark text-primary-dark py-3 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 border border-beige-dark">
+                        <i class="fa-solid fa-heart"></i> Apadrinhar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Usuário: Form Adoção Melhorado -->
+    <div id="modal-adopt" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex items-center justify-center hide p-4">
+         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-beige-dark">
+             <div class="p-5 border-b border-beige-dark flex justify-between items-center">
+                 <h2 class="text-lg font-bold text-secondary">Questionário de Adoção responsável</h2>
+                 <button onclick="closeModal('modal-adopt')" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-xmark text-lg"></i></button>
+             </div>
+             <form onsubmit="submitAdoption(event)" class="p-5 space-y-4">
+                 <div class="p-3 bg-beige/60 rounded-xl text-xs text-secondary border border-beige-dark">
+                    Solicitação para adotar: <strong id="adopt-animal-name" class="text-primary text-sm"></strong>
+                 </div>
+                 
+                 <div>
+                     <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Motivo do interesse na adoção</label>
+                     <textarea id="adopt-reason" required placeholder="Conte brevemente o motivo de querer adotar este pet..." class="w-full px-3 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-primary text-xs" rows="2"></textarea>
+                 </div>
+
+                 <!-- Resposta corrigida e sem ambiguidade conforme apontamento -->
+                 <div>
+                     <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Você já possui outros animais na sua residência?</label>
+                     <select id="adopt-other-pets" required class="w-full px-3 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-primary text-xs font-medium">
+                         <option value="Não possuo outros animais">Não possuo outros animais</option>
+                         <option value="Sim, apenas cães">Sim, apenas cães</option>
+                         <option value="Sim, apenas gatos">Sim, apenas gatos</option>
+                         <option value="Sim, cães e gatos (ambos)">Sim, cães e gatos (ambos)</option>
+                         <option value="Sim, outros pets (pássaros, roedores, etc.)">Sim, outros pets (pássaros, roedores, etc.)</option>
+                     </select>
+                 </div>
+
+                 <div>
+                     <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Tipo de Moradia e Segurança</label>
+                     <select id="adopt-housing" required class="w-full px-3 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-primary text-xs font-medium">
+                         <option value="Casa com quintal murado e seguro">Casa com quintal murado e seguro</option>
+                         <option value="Apartamento com redes de proteção instaladas">Apartamento com redes de proteção instaladas</option>
+                         <option value="Sítio / Chácara fechada">Sítio / Chácara fechada</option>
+                         <option value="Apartamento sem telas (pretendo instalar)">Apartamento sem telas (pretendo instalar)</option>
+                     </select>
+                 </div>
+
+                 <div>
+                     <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Concorda com visitas presenciais/virtuais pós-adoção?</label>
+                     <select id="adopt-followup" required class="w-full px-3 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-primary text-xs font-medium">
+                         <option value="Sim, concordo totalmente">Sim, concordo totalmente</option>
+                         <option value="Não concordo">Não concordo</option>
+                     </select>
+                 </div>
+                 
+                 <div class="pt-3 border-t border-beige-dark flex justify-end gap-2">
+                     <button type="button" onclick="closeModal('modal-adopt')" class="px-4 py-2 border rounded-xl text-xs font-bold text-gray-600">Cancelar</button>
+                     <button type="submit" class="px-6 py-2 bg-primary text-white rounded-xl text-xs font-bold shadow hover:bg-primary-dark transition">Enviar Entrevista</button>
+                 </div>
+             </form>
+         </div>
+    </div>
+
+    <!-- Modal Usuário: Apadrinhamento com Botões Predefinidos e Recorrência -->
+    <div id="modal-sponsor" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex items-center justify-center hide p-4">
+         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 text-center border border-beige-dark">
+             <div class="w-16 h-16 bg-beige text-primary rounded-full flex items-center justify-center text-3xl mx-auto mb-3 shadow-inner">
+                <i class="fa-solid fa-handshake-angle"></i>
+             </div>
+             <h2 class="text-xl font-extrabold text-secondary mb-1">Apadrinhar <span id="sponsor-animal-name" class="text-primary"></span></h2>
+             <p class="text-xs text-gray-600 mb-5">Sua contribuição ajuda nos custos diários de alimentação e saúde.</p>
+             
+             <!-- Alternância de Recorrência -->
+             <div class="flex bg-beige p-1 rounded-xl mb-5 border border-beige-dark">
+                 <button type="button" id="sponsor-freq-monthly" onclick="setSponsorFrequency('monthly')" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-primary text-white shadow">Apadrinhamento Mensal</button>
+                 <button type="button" id="sponsor-freq-single" onclick="setSponsorFrequency('single')" class="flex-1 py-1.5 text-xs font-bold text-gray-600 rounded-lg">Contribuição Única</button>
+             </div>
+
+             <!-- Botões de Opções Predefinidas (5, 10, 15, 30, 50) -->
+             <label class="block text-xs font-bold text-gray-700 uppercase mb-2 text-left">Selecione o valor:</label>
+             <div class="grid grid-cols-5 gap-2 mb-4">
+                 <button type="button" onclick="selectPresetValue(5)" class="preset-btn border border-beige-dark py-2.5 rounded-xl font-bold text-xs bg-beige/40 hover:bg-beige text-secondary transition">R$ 5</button>
+                 <button type="button" onclick="selectPresetValue(10)" class="preset-btn border border-beige-dark py-2.5 rounded-xl font-bold text-xs bg-beige/40 hover:bg-beige text-secondary transition">R$ 10</button>
+                 <button type="button" onclick="selectPresetValue(15)" class="preset-btn active border border-beige-dark py-2.5 rounded-xl font-bold text-xs bg-beige/40 hover:bg-beige text-secondary transition">R$ 15</button>
+                 <button type="button" onclick="selectPresetValue(30)" class="preset-btn border border-beige-dark py-2.5 rounded-xl font-bold text-xs bg-beige/40 hover:bg-beige text-secondary transition">R$ 30</button>
+                 <button type="button" onclick="selectPresetValue(50)" class="preset-btn border border-beige-dark py-2.5 rounded-xl font-bold text-xs bg-beige/40 hover:bg-beige text-secondary transition">R$ 50</button>
+             </div>
+
+             <div class="mb-5 text-left">
+                 <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Ou digite outro valor (R$):</label>
+                 <input type="number" id="sponsor-amount" min="1" step="1" value="15" oninput="customValueInput()" class="w-full px-3 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-primary text-center text-lg font-bold text-secondary">
+             </div>
+             
+             <div class="flex flex-col gap-2">
+                 <button onclick="submitSponsor()" class="w-full py-3 bg-primary text-white rounded-xl font-bold text-xs shadow-md hover:bg-primary-dark transition">
+                    Confirmar Apadrinhamento
+                 </button>
+                 <button onclick="closeModal('modal-sponsor')" class="w-full py-2 text-gray-500 hover:bg-gray-100 rounded-xl text-xs font-semibold">Cancelar</button>
+             </div>
+         </div>
+    </div>
+
+    <!-- Modal Usuário: Editar Contribuição do Apadrinhamento -->
+    <div id="modal-edit-sponsor" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex items-center justify-center hide p-4">
+         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 text-center border border-beige-dark">
+             <div class="w-14 h-14 bg-beige text-primary rounded-full flex items-center justify-center text-2xl mx-auto mb-3 shadow-inner">
+                <i class="fa-solid fa-pen-to-square"></i>
+             </div>
+             <h2 class="text-lg font-extrabold text-secondary mb-1">Editar Contribuição</h2>
+             <p class="text-xs text-gray-600 mb-5">Afilhado(a): <strong id="edit-sponsor-animal-name" class="text-primary"></strong></p>
+             <input type="hidden" id="edit-sponsor-id">
+             <div class="mb-5 text-left">
+                 <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Novo valor (R$):</label>
+                 <input type="number" id="edit-sponsor-amount" min="1" step="1" class="w-full px-3 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-primary text-center text-lg font-bold text-secondary">
+             </div>
+             <div class="flex flex-col gap-2">
+                 <button onclick="saveSponsorEdit()" class="w-full py-3 bg-primary text-white rounded-xl font-bold text-xs shadow-md hover:bg-primary-dark transition">
+                    Salvar Alteração
+                 </button>
+                 <button onclick="closeModal('modal-edit-sponsor')" class="w-full py-2 text-gray-500 hover:bg-gray-100 rounded-xl text-xs font-semibold">Cancelar</button>
+             </div>
+         </div>
+    </div>
+
+    <!-- Modal Usuário: Doação PIX -->
+    <div id="modal-pix" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex items-center justify-center hide p-4">
+         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm text-center p-6 border border-beige-dark relative">
+             <button onclick="closeModal('modal-pix')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-800"><i class="fa-solid fa-xmark text-lg"></i></button>
+             
+             <div class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-2xl mx-auto mb-2">
+                 <i class="fa-brands fa-pix"></i>
+             </div>
+             <h2 class="text-lg font-bold text-secondary mb-1">Doação Instantânea PIX</h2>
+             <p class="text-xs text-gray-500 mb-4" id="pix-camp-name">Campanha</p>
+             
+             <div class="mb-4">
+                 <label class="block text-xs font-bold text-gray-700 uppercase mb-1 text-left">Valor da Contribuição (R$)</label>
+                 <input type="number" id="pix-amount" value="50" min="5" step="5" class="w-full px-3 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-green-500 text-center text-xl font-extrabold text-green-700">
+             </div>
+
+             <div class="bg-beige/40 p-4 rounded-2xl border border-beige-dark mb-4">
+                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=SimulacaoPixONGMeuAmigoCaramelo" alt="QR Code PIX" class="mx-auto mb-3 w-32 h-32 rounded-xl shadow-inner border">
+                 <p class="text-[10px] text-gray-500 mb-1 font-semibold uppercase">Chave Copia e Cola (Simulada):</p>
+                 <div class="flex items-center gap-1">
+                     <input type="text" readonly value="00020126580014br.gov.bcb.pix.caramelo..." class="flex-1 text-[10px] bg-white border p-2 rounded-lg outline-none font-mono">
+                     <button onclick="copyPix()" class="bg-beige text-primary-dark p-2 rounded-lg hover:bg-beige-dark transition" title="Copiar"><i class="fa-solid fa-copy"></i></button>
+                 </div>
+             </div>
+             
+             <p class="text-[11px] text-gray-500 mb-4 italic">*Clique no botão abaixo para simular o recebimento em tempo real.</p>
+             <button onclick="simulatePixPayment()" class="w-full py-3 bg-secondary text-white rounded-xl font-bold text-xs shadow-lg hover:bg-secondary-dark transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-circle-check text-green-400"></i> Simular Pagamento Concluído
+             </button>
+         </div>
+    </div>
+
+
+    <script>
+        // --- Database State Keys ---
+        const DB_KEYS = { 
+            users: 'ong_users', 
+            animals: 'ong_animals', 
+            campaigns: 'ong_campaigns', 
+            adoptions: 'ong_adoptions', 
+            donations: 'ong_donations', 
+            sponsorships: 'ong_sponsorships' 
+        };
+
+        let currentUser = JSON.parse(sessionStorage.getItem('ong_currentUser')) || null;
+        let currentAnimalContext = null;
+        let currentCampaignContext = null;
+        let uploadedPhotosBase64 = [];
+        let selectedSponsorFreq = 'monthly';
+        let chartFluxoInstance = null;
+        let chartEspeciesInstance = null;
+
+        const FUMACA_PHOTO = 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Ferret_2008.png/960px-Ferret_2008.png';
+
+        // Inicialização do Banco com dados históricos simulando funcionamento real
+        function initDB() {
+            // Corrige a foto quebrada do Fumaça em bases já salvas no navegador
+            const savedAnimals = JSON.parse(localStorage.getItem(DB_KEYS.animals) || 'null');
+            if (savedAnimals) {
+                const fumaca = savedAnimals.find(a => a.id === 'a7' && a.photos && a.photos[0] && a.photos[0].includes('photo-1615087380697'));
+                if (fumaca) { fumaca.photos = [FUMACA_PHOTO]; localStorage.setItem(DB_KEYS.animals, JSON.stringify(savedAnimals)); }
+            }
+
+            if (!localStorage.getItem(DB_KEYS.users)) {
+                localStorage.setItem(DB_KEYS.users, JSON.stringify([
+                    { id: 'u1', name: 'Administrador ONG', email: 'admin@ong.com', password: 'admin', role: 'admin' },
+                    { id: 'u2', name: 'Juliana Costa', email: 'juliana@email.com', password: '123', role: 'user' },
+                    { id: 'u3', name: 'Carlos Eduardo', email: 'carlos@email.com', password: '123', role: 'user' }
+                ]));
+            }
+
+            if (!localStorage.getItem(DB_KEYS.animals)) {
+                localStorage.setItem(DB_KEYS.animals, JSON.stringify([
+                    { id: 'a1', name: 'Caramelo', species: 'Cachorro', breed: 'Vira-Lata (SRD)', age: 2, sex: 'Macho', size: 'Médio', health: 'Castrado, vacinado com V10 e Antirrábica, desverminado. Dócil e alegre.', status: 'Disponível', photos: ['https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'] },
+                    { id: 'a2', name: 'Luna', species: 'Gato', breed: 'Siamês Mestiço', age: 1.5, sex: 'Fêmea', size: 'Pequeno', health: 'FIV/FeLV Negativo, castrada, vacinada. Muito carinhosa.', status: 'Disponível', photos: ['https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'] },
+                    { id: 'a3', name: 'Pipoca', species: 'Coelho', breed: 'Mini Lion Head', age: 1, sex: 'Fêmea', size: 'Pequeno', health: 'Saudável, dócil, acostumada a viver em recinto amplo e seguro.', status: 'Disponível', photos: ['https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'] },
+                    { id: 'a4', name: 'Kekel', species: 'Ave', breed: 'Calopsita Silvestre', age: 2, sex: 'Macho', size: 'Pequeno', health: 'Mansinho, manso de mão, asas aparadas, alimentação à base de extrusada.', status: 'Disponível', photos: ['https://images.unsplash.com/photo-1552728089-57bdde30beb3?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'] },
+                    { id: 'a5', name: 'Barney', species: 'Roedor', breed: 'Hamster Sírio', age: 0.8, sex: 'Macho', size: 'Pequeno', health: 'Ativo e brincalhão. Requer gaiola espaçosa com rodinha silenciosa.', status: 'Disponível', photos: ['https://images.unsplash.com/photo-1425082661705-1834bfd09dca?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'] },
+                    { id: 'a6', name: 'Thor', species: 'Cachorro', breed: 'Golden Retriever Mix', age: 4, sex: 'Macho', size: 'Grande', health: 'Castrado, vacinas em dia, tratamento profilático para articulações.', status: 'Disponível', photos: ['https://images.unsplash.com/photo-1552053831-71594a27632d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'] },
+                    { id: 'a7', name: 'Fumaça', species: 'Roedor', breed: 'Ferret (Furão Doméstico)', age: 1.2, sex: 'Macho', size: 'Pequeno', health: 'Vermifugado e vacinado contra cinomose. Muito curioso e interativo.', status: 'Disponível', photos: [FUMACA_PHOTO] },
+                    { id: 'a8', name: 'Belinha', species: 'Cachorro', breed: 'Poodle Toy SRD', age: 5, sex: 'Fêmea', size: 'Pequeno', health: 'Castrada, limpa de tártaro realizada recentemente. Adora colo.', status: 'Adotado', photos: ['https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'] }
+                ]));
+            }
+
+            if (!localStorage.getItem(DB_KEYS.campaigns)) {
+                localStorage.setItem(DB_KEYS.campaigns, JSON.stringify([
+                    { id: 'c1', title: 'Mutirão de Castração de Julho', type: 'Castração', desc: 'Meta para castrar e microchipar 40 animais de rua resgatados.', goal: 4000, raised: 2850, date: '2026-11-30' },
+                    { id: 'c2', title: 'Fundo Emergencial de Ração', type: 'Arrecadação Geral', desc: 'Compra de 500kg de ração para cães e gatos sob custódia temporária.', goal: 3500, raised: 1900, date: '2026-12-15' }
+                ]));
+            }
+
+            if (!localStorage.getItem(DB_KEYS.adoptions)) {
+                localStorage.setItem(DB_KEYS.adoptions, JSON.stringify([
+                    { id: 'ad1', userId: 'u2', animalId: 'a8', reason: 'Desejo dar um lar amoroso para um cão sênior.', otherPets: 'Sim, apenas cães', housing: 'Casa com quintal murado e seguro', followup: 'Sim, concordo totalmente', status: 'Aprovado', date: '10/05/2026' },
+                    { id: 'ad2', userId: 'u3', animalId: 'a2', reason: 'Sempre tive gatos e procuro uma companheira carinhosa.', otherPets: 'Não possuo outros animais', housing: 'Apartamento com redes de proteção instaladas', followup: 'Sim, concordo totalmente', status: 'Em Análise', date: '22/10/2026' }
+                ]));
+            }
+
+            if (!localStorage.getItem(DB_KEYS.donations)) {
+                localStorage.setItem(DB_KEYS.donations, JSON.stringify([
+                    { id: 'd1', userId: 'u2', campaignId: 'c1', amount: 150, date: '12/10/2026, 14:20' },
+                    { id: 'd2', userId: 'u3', campaignId: 'c2', amount: 100, date: '18/10/2026, 09:15' }
+                ]));
+            }
+
+            if (!localStorage.getItem(DB_KEYS.sponsorships)) {
+                localStorage.setItem(DB_KEYS.sponsorships, JSON.stringify([
+                    { id: 's1', userId: 'u2', animalId: 'a1', amount: 30, frequency: 'monthly', startDate: '01/08/2026' },
+                    { id: 's2', userId: 'u3', animalId: 'a6', amount: 50, frequency: 'monthly', startDate: '15/09/2026' }
+                ]));
+            }
+        }
+
+        // --- Helpers ---
+        const getDB = (key) => JSON.parse(localStorage.getItem(key)) || [];
+        const setDB = (key, data) => localStorage.setItem(key, JSON.stringify(data));
+        const generateId = () => Math.random().toString(36).substr(2, 9);
+        const formatMoney = (val) => Number(val).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+        // --- UI Utilities ---
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const colorClass = type === 'success' ? 'bg-green-600' : type === 'error' ? 'bg-red-600' : 'bg-blue-600';
+            const icon = type === 'success' ? 'fa-circle-check' : type === 'error' ? 'fa-triangle-exclamation' : 'fa-circle-info';
+            
+            toast.className = `toast flex items-center gap-3 ${colorClass} text-white px-4 py-3 rounded-xl shadow-xl font-semibold text-xs min-w-[260px]`;
+            toast.innerHTML = `<i class="fa-solid ${icon} text-base"></i> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3200);
+        }
+
+        let confirmCallback = null;
+        function showConfirm(message, title = 'Confirmar Ação', callback) {
+            document.getElementById('confirm-title').innerText = title;
+            document.getElementById('confirm-msg').innerText = message;
+            confirmCallback = callback;
+            document.getElementById('confirm-modal').classList.remove('hide');
+        }
+        function closeConfirm() {
+            document.getElementById('confirm-modal').classList.add('hide');
+            confirmCallback = null;
+        }
+        document.getElementById('confirm-btn-yes').addEventListener('click', () => {
+            if (confirmCallback) confirmCallback();
+            closeConfirm();
+        });
+
+        function closeModal(id) { document.getElementById(id).classList.add('hide'); }
+        function openModal(id) { document.getElementById(id).classList.remove('hide'); }
+
+        // --- Auth System ---
+        let isLoginMode = true;
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('auth-title').innerText = isLoginMode ? 'Entrar na Plataforma' : 'Criar Nova Conta';
+            document.getElementById('auth-submit').innerText = isLoginMode ? 'Entrar' : 'Cadastrar';
+            document.getElementById('auth-toggle-text').innerText = isLoginMode ? 'Ainda não tem conta?' : 'Já possui conta?';
+            document.getElementById('auth-toggle-btn').innerText = isLoginMode ? 'Cadastre-se' : 'Faça Login';
+            
+            const nameGroup = document.getElementById('auth-name-group');
+            if(isLoginMode) { nameGroup.classList.add('hide'); document.getElementById('auth-name').removeAttribute('required'); }
+            else { nameGroup.classList.remove('hide'); document.getElementById('auth-name').setAttribute('required', 'true'); }
+        }
+
+        function handleAuth(e) {
+            e.preventDefault();
+            const email = document.getElementById('auth-email').value.trim();
+            const password = document.getElementById('auth-password').value;
+            const users = getDB(DB_KEYS.users);
+
+            if (isLoginMode) {
+                const user = users.find(u => u.email === email && u.password === password);
+                if (user) {
+                    currentUser = user;
+                    sessionStorage.setItem('ong_currentUser', JSON.stringify(user));
+                    showToast(`Bem-vindo(a), ${user.name.split(' ')[0]}!`);
+                    setupEnvironment();
+                } else {
+                    showToast('E-mail ou senha incorretos.', 'error');
+                }
+            } else {
+                if (users.find(u => u.email === email)) {
+                    showToast('Este e-mail já está cadastrado.', 'error'); return;
+                }
+                const name = document.getElementById('auth-name').value.trim();
+                const newUser = { id: generateId(), name, email, password, role: 'user' };
+                users.push(newUser);
+                setDB(DB_KEYS.users, users);
+                showToast('Conta criada com sucesso! Faça seu login.');
+                toggleAuthMode();
+                document.getElementById('auth-password').value = '';
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            sessionStorage.removeItem('ong_currentUser');
+            setupEnvironment();
+            showToast('Sessão encerrada.');
+        }
+
+        // --- Navigation ---
+        const views = ['view-auth', 'view-admin-dashboard', 'view-admin-animals', 'view-admin-campaigns', 'view-user-catalog', 'view-user-campaigns', 'view-user-godchildren', 'view-user-requests'];
+
+        function navigate(viewId) {
+            views.forEach(v => document.getElementById(v).classList.add('hide'));
+            document.getElementById(viewId).classList.remove('hide');
+            closeMobileMenu();
+            renderView(viewId);
+        }
+
+        function renderView(viewId) {
+            if(viewId === 'view-admin-dashboard') renderDashboard();
+            if(viewId === 'view-admin-animals') renderAdminAnimals();
+            if(viewId === 'view-admin-campaigns') renderAdminCampaigns();
+            if(viewId === 'view-user-catalog') renderUserCatalog();
+            if(viewId === 'view-user-campaigns') renderUserCampaigns();
+            if(viewId === 'view-user-godchildren') renderUserGodchildren();
+            if(viewId === 'view-user-requests') renderUserRequests();
+        }
+
+        // Re-renderiza a tela visível sempre que os dados mudam (sem precisar de F5)
+        function refreshCurrentView() {
+            if (!currentUser) return;
+            const visible = views.find(v => !document.getElementById(v).classList.contains('hide'));
+            if (visible) renderView(visible);
+        }
+
+        // Sincroniza alterações feitas em outras abas (ex: usuário doa via PIX enquanto o Admin está no Dashboard)
+        window.addEventListener('storage', (e) => {
+            if (Object.values(DB_KEYS).includes(e.key)) refreshCurrentView();
+        });
+
+        // --- Mobile Menu ---
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            const isOpen = !menu.classList.toggle('hidden');
+            document.getElementById('mobile-menu-icon').className = isOpen ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+        }
+
+        function closeMobileMenu() {
+            document.getElementById('mobile-menu').classList.add('hidden');
+            document.getElementById('mobile-menu-icon').className = 'fa-solid fa-bars';
+        }
+
+        function navigateHome() {
+            if (!currentUser) navigate('view-auth');
+            else if (currentUser.role === 'admin') navigate('view-admin-dashboard');
+            else navigate('view-user-catalog');
+        }
+
+        function setupEnvironment() {
+            const nav = document.getElementById('nav-links');
+            const mobNav = document.getElementById('mobile-menu');
+            const greeting = document.getElementById('user-greeting');
+            const btnLogout = document.getElementById('btn-logout');
+            const btnMobileMenu = document.getElementById('btn-mobile-menu');
+
+            if (!currentUser) {
+                nav.innerHTML = '';
+                mobNav.innerHTML = '';
+                greeting.classList.add('hidden');
+                btnLogout.classList.add('hidden');
+                btnMobileMenu.classList.add('hidden');
+                navigate('view-auth');
+            } else {
+                greeting.innerText = `Olá, ${currentUser.name.split(' ')[0]}`;
+                greeting.classList.remove('hidden');
+                btnLogout.classList.remove('hidden');
+                btnMobileMenu.classList.remove('hidden');
+
+                const mobileMenu = (links) => `
+                    <div class="flex items-center gap-2 pb-3 border-b border-beige-dark text-sm font-semibold text-gray-700">
+                        <i class="fa-solid fa-circle-user text-primary text-lg"></i> ${currentUser.name}
+                    </div>
+                    ${links}
+                    <button onclick="logout()" class="mt-1 pt-3 border-t border-beige-dark text-left text-sm text-red-600 font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-right-from-bracket"></i> Sair
+                    </button>
+                `;
+
+                if (currentUser.role === 'admin') {
+                    const links = `
+                        <a href="#" onclick="navigate('view-admin-dashboard')" class="text-gray-700 hover:text-primary font-bold text-xs uppercase tracking-wider transition">Dashboard</a>
+                        <a href="#" onclick="navigate('view-admin-animals')" class="text-gray-700 hover:text-primary font-bold text-xs uppercase tracking-wider transition">Animais</a>
+                        <a href="#" onclick="navigate('view-admin-campaigns')" class="text-gray-700 hover:text-primary font-bold text-xs uppercase tracking-wider transition">Campanhas</a>
+                    `;
+                    nav.innerHTML = links;
+                    mobNav.innerHTML = mobileMenu(links);
+                    navigate('view-admin-dashboard');
+                } else {
+                    const links = `
+                        <a href="#" onclick="navigate('view-user-catalog')" class="text-gray-700 hover:text-primary font-bold text-xs uppercase tracking-wider transition">Adotar</a>
+                        <a href="#" onclick="navigate('view-user-campaigns')" class="text-gray-700 hover:text-primary font-bold text-xs uppercase tracking-wider transition">Campanhas</a>
+                        <a href="#" onclick="navigate('view-user-godchildren')" class="text-gray-700 hover:text-primary font-bold text-xs uppercase tracking-wider transition">Meus Afilhados</a>
+                        <a href="#" onclick="navigate('view-user-requests')" class="text-gray-700 hover:text-primary font-bold text-xs uppercase tracking-wider transition">Minhas Solicitações</a>
+                    `;
+                    nav.innerHTML = links;
+                    mobNav.innerHTML = mobileMenu(links);
+                    navigate('view-user-catalog');
+                }
+            }
+        }
+
+        // --- Admin Dashboard & Analytics ---
+        function renderDashboard() {
+            const adoptions = getDB(DB_KEYS.adoptions);
+            const donations = getDB(DB_KEYS.donations);
+            const campaigns = getDB(DB_KEYS.campaigns);
+            const sponsorships = getDB(DB_KEYS.sponsorships);
+            const animals = getDB(DB_KEYS.animals);
+            const users = getDB(DB_KEYS.users);
+
+            const approvedCount = adoptions.filter(a => a.status === 'Aprovado').length;
+            const pendingCount = adoptions.filter(a => a.status === 'Em Análise' || a.status === 'Pendente').length;
+            const approvalRate = adoptions.length > 0 ? Math.round((approvedCount / adoptions.length) * 100) : 0;
+
+            document.getElementById('dash-adoptions').innerText = approvedCount;
+            document.getElementById('dash-adoptions-rate').innerText = `${approvalRate}%`;
+            document.getElementById('dash-pending-count').innerText = `${pendingCount} solicitações em análise`;
+
+            const totalRaised = donations.reduce((sum, d) => sum + Number(d.amount), 0);
+            document.getElementById('dash-raised').innerText = formatMoney(totalRaised);
+            document.getElementById('dash-sponsors').innerText = sponsorships.length;
+
+            const monthlySponsorRev = sponsorships.reduce((sum, s) => sum + Number(s.amount), 0);
+            document.getElementById('dash-sponsors-rev').innerText = formatMoney(monthlySponsorRev);
+
+            // Tabela de Adoções
+            const tbodyAdopt = document.getElementById('dash-adoption-list');
+            tbodyAdopt.innerHTML = adoptions.slice().reverse().map(a => {
+                const u = users.find(x => x.id === a.userId);
+                const an = animals.find(x => x.id === a.animalId);
+                const badgeClass = a.status === 'Aprovado' ? 'bg-green-100 text-green-700' : a.status === 'Recusado' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700';
+                
+                return `<tr>
+                    <td class="p-3 font-semibold text-gray-800">${u ? u.name : 'Solicitante'}</td>
+                    <td class="p-3 font-medium">${an ? an.name : 'Pet'}</td>
+                    <td class="p-3 text-gray-500 max-w-[140px] truncate">${a.housing || 'Residência'}</td>
+                    <td class="p-3"><span class="px-2 py-1 rounded-full text-[10px] font-bold ${badgeClass}">${a.status}</span></td>
+                    <td class="p-3 text-right">
+                        <select onchange="updateAdoptionStatus('${a.id}', this.value)" class="text-[10px] border rounded-lg p-1 font-bold outline-none">
+                            <option value="Em Análise" ${a.status === 'Em Análise' ? 'selected' : ''}>Analisar</option>
+                            <option value="Aprovado" ${a.status === 'Aprovado' ? 'selected' : ''}>Aprovar</option>
+                            <option value="Recusado" ${a.status === 'Recusado' ? 'selected' : ''}>Recusar</option>
+                        </select>
+                    </td>
+                </tr>`;
+            }).join('') || '<tr><td colspan="5" class="p-4 text-center text-gray-400">Nenhuma solicitação até o momento.</td></tr>';
+
+            // Tabela de Doações Recentes
+            const tbodyDon = document.getElementById('dash-donation-list');
+            tbodyDon.innerHTML = donations.slice().reverse().map(d => {
+                const u = users.find(x => x.id === d.userId);
+                const c = campaigns.find(x => x.id === d.campaignId);
+                return `<tr>
+                    <td class="p-3 font-medium text-gray-800">${u ? u.name : 'Doador Anônimo'}</td>
+                    <td class="p-3 truncate max-w-[140px]">${c ? c.title : 'Geral'}</td>
+                    <td class="p-3 text-gray-500">${d.date}</td>
+                    <td class="p-3 text-right font-extrabold text-green-600">+${formatMoney(d.amount)}</td>
+                </tr>`;
+            }).join('') || '<tr><td colspan="4" class="p-4 text-center text-gray-400">Nenhuma doação recente.</td></tr>';
+
+            renderCharts(animals, adoptions, sponsorships);
+        }
+
+        // --- Exportação CSV (compatível com Excel / Google Sheets) ---
+        function exportCSV(type) {
+            const users = getDB(DB_KEYS.users);
+            const animals = getDB(DB_KEYS.animals);
+            const campaigns = getDB(DB_KEYS.campaigns);
+            let header, rows, filename;
+
+            if (type === 'adoptions') {
+                header = ['Adotante', 'E-mail', 'Animal', 'Motivo', 'Outros Animais', 'Moradia', 'Visitas Pós-Adoção', 'Status', 'Data'];
+                rows = getDB(DB_KEYS.adoptions).map(a => {
+                    const u = users.find(x => x.id === a.userId);
+                    const an = animals.find(x => x.id === a.animalId);
+                    return [u ? u.name : 'Solicitante', u ? u.email : '', an ? an.name : 'Pet', a.reason, a.otherPets, a.housing, a.followup, a.status, a.date];
+                });
+                filename = 'solicitacoes_adocao.csv';
+            } else {
+                header = ['Doador', 'E-mail', 'Campanha', 'Data', 'Valor (R$)'];
+                rows = getDB(DB_KEYS.donations).map(d => {
+                    const u = users.find(x => x.id === d.userId);
+                    const c = campaigns.find(x => x.id === d.campaignId);
+                    return [u ? u.name : 'Doador Anônimo', u ? u.email : '', c ? c.title : 'Geral', d.date, Number(d.amount).toFixed(2).replace('.', ',')];
+                });
+                filename = 'doacoes_campanhas.csv';
+            }
+
+            const escape = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+            const csv = [header, ...rows].map(r => r.map(escape).join(';')).join('\r\n');
+            const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(link.href);
+            showToast('Arquivo CSV exportado!');
+        }
+
+        // --- Reset do Banco de Dados Demo ---
+        function resetDemoData() {
+            showConfirm('Todos os dados de teste serão apagados e a base original de demonstração será restaurada.', 'Resetar Dados de Teste', () => {
+                Object.values(DB_KEYS).forEach(k => localStorage.removeItem(k));
+                initDB();
+                navigate('view-admin-dashboard');
+                showToast('Base de demonstração restaurada!');
+            });
+        }
+
+        function updateAdoptionStatus(adoptionId, newStatus) {
+            let adoptions = getDB(DB_KEYS.adoptions);
+            const index = adoptions.findIndex(a => a.id === adoptionId);
+            if(index > -1) {
+                adoptions[index].status = newStatus;
+                if(newStatus === 'Aprovado') adoptions[index].approvedDate = new Date().toLocaleDateString('pt-BR');
+
+                // Se aprovado, atualiza status do pet para "Adotado"
+                if(newStatus === 'Aprovado') {
+                    let animals = getDB(DB_KEYS.animals);
+                    const aIdx = animals.findIndex(x => x.id === adoptions[index].animalId);
+                    if(aIdx > -1) {
+                        animals[aIdx].status = 'Adotado';
+                        setDB(DB_KEYS.animals, animals);
+                    }
+                }
+                
+                setDB(DB_KEYS.adoptions, adoptions);
+                showToast(`Status da adoção alterado para: ${newStatus}`);
+                renderDashboard();
+            }
+        }
+
+        // Renderização dos Gráficos Interativos (Chart.js)
+        function renderCharts(animals, adoptions, sponsorships) {
+            // Chart 1: Fluxo dos Últimos 6 Meses (calculado a partir dos dados reais)
+            const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+            const now = new Date();
+            const months = [];
+            for (let i = 5; i >= 0; i--) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                months.push({ m: d.getMonth() + 1, y: d.getFullYear(), label: monthNames[d.getMonth()] });
+            }
+            const monthKey = (dateStr) => {
+                const [, m, y] = String(dateStr || '').split(',')[0].trim().split('/');
+                return `${Number(m)}/${Number(y)}`;
+            };
+            const countByMonth = (items, getDate) => months.map(mo => items.filter(it => monthKey(getDate(it)) === `${mo.m}/${mo.y}`).length);
+
+            const adoptionsData = countByMonth(adoptions.filter(a => a.status === 'Aprovado'), a => a.approvedDate || a.date);
+            const sponsorshipsData = countByMonth(sponsorships, s => s.startDate);
+
+            const ctxFluxo = document.getElementById('chart-fluxo').getContext('2d');
+            if(chartFluxoInstance) chartFluxoInstance.destroy();
+
+            chartFluxoInstance = new Chart(ctxFluxo, {
+                type: 'line',
+                data: {
+                    labels: months.map(mo => mo.label),
+                    datasets: [
+                        {
+                            label: 'Adoções Concluídas',
+                            data: adoptionsData,
+                            borderColor: '#C17743',
+                            backgroundColor: 'rgba(193, 119, 67, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Novos Apadrinhamentos',
+                            data: sponsorshipsData,
+                            borderColor: '#27272A',
+                            backgroundColor: 'rgba(39, 39, 42, 0.05)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top', labels: { font: { family: 'Inter', size: 11 } } } },
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                }
+            });
+
+            // Chart 2: Distribuição por Espécie
+            const speciesMap = {};
+            animals.forEach(a => { speciesMap[a.species] = (speciesMap[a.species] || 0) + 1; });
+            
+            const ctxEspecies = document.getElementById('chart-especies').getContext('2d');
+            if(chartEspeciesInstance) chartEspeciesInstance.destroy();
+
+            chartEspeciesInstance = new Chart(ctxEspecies, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(speciesMap),
+                    datasets: [{
+                        data: Object.values(speciesMap),
+                        backgroundColor: ['#C17743', '#E8A373', '#27272A', '#E5D5C5', '#A66233']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 11 } } } }
+                }
+            });
+        }
+
+        // --- Admin: CRUD Animais ---
+        function renderAdminAnimals() {
+            const animals = getDB(DB_KEYS.animals);
+            const tbody = document.getElementById('admin-animal-table');
+            
+            tbody.innerHTML = animals.map(a => `
+                <tr class="hover:bg-beige/20 transition">
+                    <td class="p-3">
+                        <img src="${a.photos && a.photos.length > 0 ? a.photos[0] : 'https://placehold.co/100'}" class="w-12 h-12 rounded-xl object-cover border">
+                    </td>
+                    <td class="p-3 font-bold text-gray-800">${a.name}</td>
+                    <td class="p-3 text-gray-600">${a.species} <span class="text-xs text-gray-400">(${a.breed || 'SRD'})</span></td>
+                    <td class="p-3 text-gray-600">${a.age} ano(s) • ${a.size}</td>
+                    <td class="p-3">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${a.status === 'Disponível' ? 'bg-green-100 text-green-700' : a.status === 'Adotado' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}">${a.status}</span>
+                    </td>
+                    <td class="p-3 text-right">
+                        <button onclick="editAnimal('${a.id}')" class="text-blue-600 hover:text-blue-800 p-1.5"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="deleteAnimal('${a.id}')" class="text-red-500 hover:text-red-700 p-1.5 ml-1"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openAnimalForm() {
+            document.getElementById('form-animal').reset();
+            document.getElementById('animal-id').value = '';
+            document.getElementById('modal-animal-title').innerText = 'Novo Cadastramento de Pet';
+            document.getElementById('animal-photo-preview').innerHTML = '';
+            uploadedPhotosBase64 = [];
+            openModal('modal-animal');
+        }
+
+        document.getElementById('animal-photos').addEventListener('change', function(e) {
+            const files = e.target.files;
+            const preview = document.getElementById('animal-photo-preview');
+            preview.innerHTML = '';
+            uploadedPhotosBase64 = [];
+
+            for (let file of files) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 500;
+                        const scaleSize = MAX_WIDTH / img.width;
+                        canvas.width = MAX_WIDTH;
+                        canvas.height = img.height * scaleSize;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
+                        
+                        uploadedPhotosBase64.push(dataUrl);
+                        preview.innerHTML += `<img src="${dataUrl}" class="image-preview border shadow-sm">`;
+                    }
+                    img.src = event.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function saveAnimal(e) {
+            e.preventDefault();
+            const id = document.getElementById('animal-id').value || generateId();
+            const animal = {
+                id,
+                name: document.getElementById('animal-name').value,
+                species: document.getElementById('animal-species').value,
+                breed: document.getElementById('animal-breed').value,
+                age: parseFloat(document.getElementById('animal-age').value),
+                sex: document.getElementById('animal-sex').value,
+                size: document.getElementById('animal-size').value,
+                status: document.getElementById('animal-status').value,
+                health: document.getElementById('animal-history').value,
+                photos: uploadedPhotosBase64.length > 0 ? uploadedPhotosBase64 : []
+            };
+
+            let animals = getDB(DB_KEYS.animals);
+            const index = animals.findIndex(a => a.id === id);
+            
+            if (index >= 0) {
+                if (animal.photos.length === 0) animal.photos = animals[index].photos;
+                animals[index] = animal;
+                showToast('Cadastro do animal atualizado!');
+            } else {
+                animals.push(animal);
+                showToast('Novo pet cadastrado com sucesso!');
+            }
+            
+            setDB(DB_KEYS.animals, animals);
+            closeModal('modal-animal');
+            renderAdminAnimals();
+        }
+
+        function editAnimal(id) {
+            const animal = getDB(DB_KEYS.animals).find(a => a.id === id);
+            if (!animal) return;
+            
+            document.getElementById('animal-id').value = animal.id;
+            document.getElementById('animal-name').value = animal.name;
+            document.getElementById('animal-species').value = animal.species;
+            document.getElementById('animal-breed').value = animal.breed || '';
+            document.getElementById('animal-age').value = animal.age;
+            document.getElementById('animal-sex').value = animal.sex;
+            document.getElementById('animal-size').value = animal.size;
+            document.getElementById('animal-status').value = animal.status;
+            document.getElementById('animal-history').value = animal.health;
+            
+            document.getElementById('modal-animal-title').innerText = 'Editar Prontuário do Pet';
+            uploadedPhotosBase64 = [];
+            
+            const preview = document.getElementById('animal-photo-preview');
+            preview.innerHTML = animal.photos ? animal.photos.map(p => `<img src="${p}" class="image-preview border shadow-sm opacity-70">`).join('') : '';
+            
+            openModal('modal-animal');
+        }
+
+        function deleteAnimal(id) {
+            showConfirm('Tem certeza que deseja remover este animal do registro?', 'Excluir Pet', () => {
+                let animals = getDB(DB_KEYS.animals).filter(a => a.id !== id);
+                setDB(DB_KEYS.animals, animals);
+                renderAdminAnimals();
+                showToast('Animal removido.');
+            });
+        }
+
+        // --- Admin: CRUD Campanhas ---
+        function renderAdminCampaigns() {
+            const campaigns = getDB(DB_KEYS.campaigns);
+            const grid = document.getElementById('admin-campaign-grid');
+            
+            grid.innerHTML = campaigns.map(c => {
+                const progress = Math.min((c.raised / c.goal) * 100, 100).toFixed(1);
+                return `
+                <div class="bg-white border border-beige-dark rounded-2xl p-5 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="bg-beige text-primary-dark px-2.5 py-1 rounded-full text-[10px] font-bold uppercase">${c.type}</span>
+                            <div>
+                                <button onclick="editCampaign('${c.id}')" class="text-blue-500 p-1"><i class="fa-solid fa-pen"></i></button>
+                                <button onclick="deleteCampaign('${c.id}')" class="text-red-500 p-1 ml-1"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <h3 class="font-extrabold text-base text-secondary mb-1 truncate">${c.title}</h3>
+                        <p class="text-gray-500 text-xs mb-4 line-clamp-2">${c.desc}</p>
+                    </div>
+                    
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-gray-600 font-semibold">Progresso</span>
+                            <span class="font-bold text-primary">${progress}%</span>
+                        </div>
+                        <div class="w-full bg-beige rounded-full h-2">
+                            <div class="bg-primary h-2 rounded-full" style="width: ${progress}%"></div>
+                        </div>
+                        
+                        <div class="flex justify-between text-xs text-gray-700 mt-3 pt-3 border-t border-beige-dark">
+                            <div>Arrecadado:<br><span class="font-bold text-green-700">${formatMoney(c.raised)}</span></div>
+                            <div class="text-right">Meta:<br><span class="font-bold">${formatMoney(c.goal)}</span></div>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        function openCampaignForm() {
+            document.getElementById('form-campaign').reset();
+            document.getElementById('camp-id').value = '';
+            document.getElementById('modal-campaign-title').innerText = 'Nova Campanha Financeira';
+            openModal('modal-campaign');
+        }
+
+        function saveCampaign(e) {
+            e.preventDefault();
+            const id = document.getElementById('camp-id').value || generateId();
+            let campaigns = getDB(DB_KEYS.campaigns);
+            const index = campaigns.findIndex(c => c.id === id);
+            
+            const baseObj = index >= 0 ? campaigns[index] : { raised: 0 };
+            
+            const camp = {
+                id,
+                title: document.getElementById('camp-title').value,
+                type: document.getElementById('camp-type').value,
+                desc: document.getElementById('camp-desc').value,
+                goal: parseFloat(document.getElementById('camp-goal').value),
+                date: document.getElementById('camp-date').value,
+                raised: baseObj.raised
+            };
+
+            if (index >= 0) { campaigns[index] = camp; showToast('Campanha atualizada!'); }
+            else { campaigns.push(camp); showToast('Nova campanha criada!'); }
+            
+            setDB(DB_KEYS.campaigns, campaigns);
+            closeModal('modal-campaign');
+            renderAdminCampaigns();
+        }
+
+        function editCampaign(id) {
+            const camp = getDB(DB_KEYS.campaigns).find(c => c.id === id);
+            if(!camp) return;
+            document.getElementById('camp-id').value = camp.id;
+            document.getElementById('camp-title').value = camp.title;
+            document.getElementById('camp-type').value = camp.type;
+            document.getElementById('camp-desc').value = camp.desc;
+            document.getElementById('camp-goal').value = camp.goal;
+            document.getElementById('camp-date').value = camp.date;
+            document.getElementById('modal-campaign-title').innerText = 'Editar Campanha';
+            openModal('modal-campaign');
+        }
+
+        function deleteCampaign(id) {
+            showConfirm('Deseja excluir esta campanha?', 'Remover Campanha', () => {
+                let camps = getDB(DB_KEYS.campaigns).filter(c => c.id !== id);
+                setDB(DB_KEYS.campaigns, camps);
+                renderAdminCampaigns();
+                showToast('Campanha encerrada e removida.');
+            });
+        }
+
+        // --- User Catalog ---
+        function renderUserCatalog() {
+            let animals = getDB(DB_KEYS.animals).filter(a => a.status === 'Disponível');
+            const speciesFilter = document.getElementById('filter-species').value;
+            const sizeFilter = document.getElementById('filter-size').value;
+            const normalize = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+            const searchTerm = normalize(document.getElementById('filter-search').value.trim());
+
+            if (speciesFilter !== 'all') animals = animals.filter(a => a.species === speciesFilter);
+            if (sizeFilter !== 'all') animals = animals.filter(a => a.size === sizeFilter);
+            if (searchTerm) animals = animals.filter(a => normalize(a.name).includes(searchTerm) || normalize(a.breed).includes(searchTerm));
+
+            const grid = document.getElementById('user-catalog-grid');
+            document.getElementById('catalog-count-badge').innerText = `Exibindo ${animals.length} pet(s) disponível(is)`;
+
+            if (animals.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center py-12 text-gray-500 font-medium">Nenhum animal encontrado com estes filtros no momento.</div>';
+                return;
+            }
+
+            grid.innerHTML = animals.map(a => `
+                <div class="bg-white rounded-2xl shadow-sm border border-beige-dark hover:shadow-xl transition-shadow cursor-pointer overflow-hidden flex flex-col justify-between" onclick="openAnimalDetails('${a.id}')">
+                    <div>
+                        <div class="h-48 overflow-hidden relative bg-beige/30">
+                            <img src="${a.photos && a.photos.length > 0 ? a.photos[0] : 'https://placehold.co/400x300'}" class="w-full h-full object-cover transition-transform hover:scale-105 duration-500">
+                            <div class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-[10px] font-bold text-primary shadow">
+                                ${a.size}
+                            </div>
+                            <div class="absolute bottom-3 left-3 bg-secondary/80 text-white px-2.5 py-0.5 rounded-full text-[10px] font-bold">
+                                ${a.species}
+                            </div>
+                        </div>
+                        <div class="p-5">
+                            <h3 class="text-xl font-extrabold text-secondary">${a.name}</h3>
+                            <p class="text-xs text-gray-500 mb-2">${a.breed || 'SRD'} • ${a.age} ano(s) • ${a.sex}</p>
+                            <p class="text-xs text-gray-600 line-clamp-2">${a.health}</p>
+                        </div>
+                    </div>
+                    <div class="p-5 pt-0 mt-auto">
+                        <div class="pt-3 border-t border-beige-dark flex items-center justify-between text-primary font-bold text-xs">
+                            <span>Ver História Completa</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openAnimalDetails(id) {
+            const animal = getDB(DB_KEYS.animals).find(a => a.id === id);
+            if(!animal) return;
+            currentAnimalContext = animal;
+
+            document.getElementById('detail-photo').src = animal.photos && animal.photos.length > 0 ? animal.photos[0] : 'https://placehold.co/400x300';
+            document.getElementById('detail-name').innerText = animal.name;
+            document.getElementById('detail-breed').innerText = animal.breed || 'SRD';
+            document.getElementById('detail-age').innerText = `${animal.age} ano(s)`;
+            document.getElementById('detail-size').innerText = animal.size;
+            document.getElementById('detail-sex').innerText = animal.sex;
+            document.getElementById('detail-id').innerText = `#${animal.id}`;
+            document.getElementById('detail-species-badge').innerText = animal.species;
+            document.getElementById('detail-history').innerText = animal.health;
+            
+            const statusBadge = document.getElementById('detail-status');
+            statusBadge.innerText = animal.status;
+            statusBadge.className = `px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${animal.status === 'Disponível' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`;
+
+            document.getElementById('btn-adopt').style.display = animal.status === 'Disponível' ? 'block' : 'none';
+            openModal('modal-animal-details');
+        }
+
+        // --- User Adoption Submission ---
+        function openAdoptForm() {
+            if(!currentUser) { showToast('Faça login para solicitar adoção.', 'error'); navigate('view-auth'); return; }
+            closeModal('modal-animal-details');
+            document.getElementById('adopt-animal-name').innerText = currentAnimalContext.name;
+            openModal('modal-adopt');
+        }
+
+        function submitAdoption(e) {
+            e.preventDefault();
+            const adoptions = getDB(DB_KEYS.adoptions);
+            
+            if(adoptions.find(a => a.animalId === currentAnimalContext.id && a.userId === currentUser.id)) {
+                showToast('Você já enviou uma solicitação para este animal.', 'error');
+                closeModal('modal-adopt');
+                return;
+            }
+
+            adoptions.push({
+                id: generateId(),
+                userId: currentUser.id,
+                animalId: currentAnimalContext.id,
+                reason: document.getElementById('adopt-reason').value,
+                otherPets: document.getElementById('adopt-other-pets').value,
+                housing: document.getElementById('adopt-housing').value,
+                followup: document.getElementById('adopt-followup').value,
+                status: 'Em Análise',
+                date: new Date().toLocaleDateString('pt-BR')
+            });
+            
+            setDB(DB_KEYS.adoptions, adoptions);
+            closeModal('modal-adopt');
+            showToast('Solicitação de adoção enviada! Acompanhe em "Minhas Solicitações".');
+            refreshCurrentView();
+        }
+
+        // --- User: Minhas Solicitações ---
+        function renderUserRequests() {
+            const adoptions = getDB(DB_KEYS.adoptions).filter(a => a.userId === currentUser.id);
+            const animals = getDB(DB_KEYS.animals);
+            const grid = document.getElementById('user-requests-grid');
+            const emptyState = document.getElementById('requests-empty');
+
+            if(adoptions.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hide');
+                return;
+            }
+
+            emptyState.classList.add('hide');
+            grid.innerHTML = adoptions.slice().reverse().map(r => {
+                const a = animals.find(x => x.id === r.animalId);
+                const badgeClass = r.status === 'Aprovado' ? 'bg-green-100 text-green-700' : r.status === 'Recusado' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700';
+                const badgeIcon = r.status === 'Aprovado' ? 'fa-circle-check' : r.status === 'Recusado' ? 'fa-circle-xmark' : 'fa-hourglass-half';
+
+                return `
+                <div class="bg-white rounded-2xl shadow-sm border border-beige-dark p-5 flex flex-col sm:flex-row gap-5">
+                    <img src="${a && a.photos && a.photos.length > 0 ? a.photos[0] : 'https://placehold.co/100'}" class="w-24 h-24 rounded-2xl object-cover border shadow-sm mx-auto sm:mx-0">
+                    <div class="flex-1">
+                        <div class="flex items-start justify-between gap-2 mb-1">
+                            <h3 class="text-lg font-extrabold text-secondary">${a ? a.name : 'Pet'}</h3>
+                            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap flex items-center gap-1 ${badgeClass}"><i class="fa-solid ${badgeIcon}"></i> ${r.status}</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-3">Enviada em: ${r.date}</p>
+                        <ul class="text-xs text-gray-600 space-y-1 bg-beige/40 p-3 rounded-xl border border-beige-dark">
+                            <li><strong>Motivo:</strong> ${r.reason}</li>
+                            <li><strong>Outros animais:</strong> ${r.otherPets}</li>
+                            <li><strong>Moradia:</strong> ${r.housing}</li>
+                            <li><strong>Visitas pós-adoção:</strong> ${r.followup}</li>
+                        </ul>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        // --- User Sponsoring (Apadrinhamento) ---
+        function openSponsorForm() {
+            if(!currentUser) { showToast('Faça login para apadrinhar um pet.', 'error'); navigate('view-auth'); return; }
+            closeModal('modal-animal-details');
+            document.getElementById('sponsor-animal-name').innerText = currentAnimalContext.name;
+            selectPresetValue(15);
+            openModal('modal-sponsor');
+        }
+
+        function setSponsorFrequency(freq) {
+            selectedSponsorFreq = freq;
+            const btnMonthly = document.getElementById('sponsor-freq-monthly');
+            const btnSingle = document.getElementById('sponsor-freq-single');
+
+            if(freq === 'monthly') {
+                btnMonthly.className = 'flex-1 py-1.5 text-xs font-bold rounded-lg bg-primary text-white shadow';
+                btnSingle.className = 'flex-1 py-1.5 text-xs font-bold text-gray-600 rounded-lg';
+            } else {
+                btnSingle.className = 'flex-1 py-1.5 text-xs font-bold rounded-lg bg-primary text-white shadow';
+                btnMonthly.className = 'flex-1 py-1.5 text-xs font-bold text-gray-600 rounded-lg';
+            }
+        }
+
+        function selectPresetValue(val) {
+            document.getElementById('sponsor-amount').value = val;
+            const buttons = document.querySelectorAll('.preset-btn');
+            buttons.forEach(btn => {
+                if(btn.innerText.includes(`R$ ${val}`)) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+        }
+
+        function customValueInput() {
+            const buttons = document.querySelectorAll('.preset-btn');
+            const currentVal = document.getElementById('sponsor-amount').value;
+            buttons.forEach(btn => {
+                if(btn.innerText.includes(`R$ ${currentVal}`)) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+        }
+
+        function submitSponsor() {
+            const amount = parseFloat(document.getElementById('sponsor-amount').value);
+            if(!amount || amount < 1) { showToast('Digite um valor válido.', 'error'); return; }
+
+            const sponsorships = getDB(DB_KEYS.sponsorships);
+            sponsorships.push({
+                id: generateId(),
+                userId: currentUser.id,
+                animalId: currentAnimalContext.id,
+                amount: amount,
+                frequency: selectedSponsorFreq,
+                startDate: new Date().toLocaleDateString('pt-BR')
+            });
+            
+            setDB(DB_KEYS.sponsorships, sponsorships);
+            closeModal('modal-sponsor');
+            showToast(`Obrigado! Você agora é padrinho do(a) ${currentAnimalContext.name}! ❤️`);
+            refreshCurrentView();
+        }
+
+        // --- User Campaigns & PIX ---
+        function renderUserCampaigns() {
+            const campaigns = getDB(DB_KEYS.campaigns);
+            const grid = document.getElementById('user-campaigns-grid');
+            
+            grid.innerHTML = campaigns.map(c => {
+                const progress = Math.min((c.raised / c.goal) * 100, 100).toFixed(1);
+                return `
+                <div class="bg-white rounded-2xl shadow-sm border border-beige-dark p-6 flex flex-col justify-between hover:shadow-md transition">
+                    <div>
+                        <span class="text-[10px] font-bold bg-beige text-primary-dark px-3 py-1 rounded-full uppercase tracking-wider">${c.type}</span>
+                        <h3 class="text-xl font-extrabold text-secondary mt-3 mb-2">${c.title}</h3>
+                        <p class="text-gray-600 text-xs mb-6 line-clamp-3">${c.desc}</p>
+                    </div>
+                    
+                    <div>
+                        <div class="bg-beige/40 p-4 rounded-xl border border-beige-dark mb-4">
+                            <div class="flex justify-between text-xs mb-1 font-semibold">
+                                <span>Arrecadado: ${formatMoney(c.raised)}</span>
+                                <span class="text-primary-dark">Meta: ${formatMoney(c.goal)}</span>
+                            </div>
+                            <div class="w-full bg-beige rounded-full h-2">
+                                <div class="bg-primary h-2 rounded-full" style="width: ${progress}%"></div>
+                            </div>
+                            <p class="text-right text-[10px] text-gray-500 mt-1 font-bold">${progress}% atingido</p>
+                        </div>
+                        
+                        <button onclick="openPixModal('${c.id}')" class="w-full bg-secondary hover:bg-secondary-dark text-white font-bold py-3 rounded-xl shadow transition text-xs flex items-center justify-center gap-2">
+                            <i class="fa-brands fa-pix text-green-400"></i> Doar via PIX
+                        </button>
+                    </div>
+                </div>
+            `}).join('') || '<div class="col-span-full text-center py-10 text-gray-500">Nenhuma campanha ativa no momento.</div>';
+        }
+
+        function openPixModal(campId) {
+            if(!currentUser) { showToast('Faça login para realizar doações.', 'error'); navigate('view-auth'); return; }
+            const camp = getDB(DB_KEYS.campaigns).find(c => c.id === campId);
+            if(!camp) return;
+            currentCampaignContext = camp;
+            
+            document.getElementById('pix-camp-name').innerText = camp.title;
+            document.getElementById('pix-amount').value = '50';
+            openModal('modal-pix');
+        }
+
+        function copyPix() {
+            showToast('Chave PIX copiada!');
+        }
+
+        function simulatePixPayment() {
+            const amount = parseFloat(document.getElementById('pix-amount').value);
+            if(amount <= 0 || isNaN(amount)) { showToast('Valor de doação inválido.', 'error'); return; }
+
+            const donations = getDB(DB_KEYS.donations);
+            donations.push({
+                id: generateId(),
+                userId: currentUser.id,
+                campaignId: currentCampaignContext.id,
+                amount: amount,
+                date: new Date().toLocaleString('pt-BR')
+            });
+            setDB(DB_KEYS.donations, donations);
+
+            const campaigns = getDB(DB_KEYS.campaigns);
+            const cIndex = campaigns.findIndex(c => c.id === currentCampaignContext.id);
+            if(cIndex > -1) {
+                campaigns[cIndex].raised += amount;
+                setDB(DB_KEYS.campaigns, campaigns);
+            }
+
+            closeModal('modal-pix');
+            showToast('Doação confirmada! Muito obrigado pela ajuda!');
+            refreshCurrentView();
+        }
+
+        // --- User: Meus Afilhados ---
+        function renderUserGodchildren() {
+            const sponsorships = getDB(DB_KEYS.sponsorships).filter(s => s.userId === currentUser.id);
+            const animals = getDB(DB_KEYS.animals);
+            const grid = document.getElementById('user-godchildren-grid');
+            const emptyState = document.getElementById('godchildren-empty');
+
+            if(sponsorships.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hide');
+                return;
+            }
+            
+            emptyState.classList.add('hide');
+            grid.innerHTML = sponsorships.map(s => {
+                const a = animals.find(x => x.id === s.animalId);
+                if(!a) return '';
+                
+                return `
+                <div class="bg-white rounded-2xl shadow-sm border border-beige-dark p-5 flex flex-col sm:flex-row items-center gap-5">
+                    <img src="${a.photos && a.photos.length > 0 ? a.photos[0] : 'https://placehold.co/100'}" class="w-24 h-24 rounded-2xl object-cover border shadow-sm">
+                    <div class="flex-1 text-center sm:text-left">
+                        <h3 class="text-lg font-extrabold text-secondary">${a.name}</h3>
+                        <p class="text-xs text-gray-500 mb-1">Apadrinhado em: ${s.startDate}</p>
+                        <p class="text-xs font-bold text-primary mb-3">Modalidade: ${s.frequency === 'monthly' ? 'Mensal Recorrente' : 'Doação Única'} (${formatMoney(s.amount)})</p>
+                        <div class="flex flex-wrap gap-2 justify-center sm:justify-start">
+                            <button onclick="simulateMonthlyPayment('${s.id}')" class="text-xs bg-beige hover:bg-beige-dark text-primary-dark font-bold px-4 py-2 rounded-xl border border-beige-dark transition">
+                                Simular Pagamento do Mês
+                            </button>
+                            <button onclick="openSponsorEdit('${s.id}')" class="text-xs bg-white hover:bg-beige/60 text-secondary font-bold px-3 py-2 rounded-xl border border-beige-dark transition flex items-center gap-1">
+                                <i class="fa-solid fa-pen"></i> Editar Contribuição
+                            </button>
+                            <button onclick="cancelSponsorship('${s.id}')" class="text-xs bg-white hover:bg-red-50 text-red-600 font-bold px-3 py-2 rounded-xl border border-red-200 transition flex items-center gap-1">
+                                <i class="fa-solid fa-heart-crack"></i> Cancelar Apadrinhamento
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        function simulateMonthlyPayment(sponsorId) {
+            showToast('Pagamento do mês simulação realizada com sucesso!', 'success');
+        }
+
+        function openSponsorEdit(sponsorId) {
+            const s = getDB(DB_KEYS.sponsorships).find(x => x.id === sponsorId);
+            if(!s) return;
+            const a = getDB(DB_KEYS.animals).find(x => x.id === s.animalId);
+            document.getElementById('edit-sponsor-id').value = s.id;
+            document.getElementById('edit-sponsor-animal-name').innerText = a ? a.name : 'Pet';
+            document.getElementById('edit-sponsor-amount').value = s.amount;
+            openModal('modal-edit-sponsor');
+        }
+
+        function saveSponsorEdit() {
+            const amount = parseFloat(document.getElementById('edit-sponsor-amount').value);
+            if(!amount || amount < 1) { showToast('Digite um valor válido.', 'error'); return; }
+
+            const sponsorships = getDB(DB_KEYS.sponsorships);
+            const index = sponsorships.findIndex(x => x.id === document.getElementById('edit-sponsor-id').value);
+            if(index > -1) {
+                sponsorships[index].amount = amount;
+                setDB(DB_KEYS.sponsorships, sponsorships);
+                showToast(`Contribuição atualizada para ${formatMoney(amount)}!`);
+            }
+            closeModal('modal-edit-sponsor');
+            refreshCurrentView();
+        }
+
+        function cancelSponsorship(sponsorId) {
+            const s = getDB(DB_KEYS.sponsorships).find(x => x.id === sponsorId);
+            if(!s) return;
+            const a = getDB(DB_KEYS.animals).find(x => x.id === s.animalId);
+            showConfirm(`Que pena! Sua ajuda fez muita diferença na vida de ${a ? a.name : 'seu afilhado'}. Deseja mesmo encerrar este apadrinhamento?`, 'Cancelar Apadrinhamento', () => {
+                setDB(DB_KEYS.sponsorships, getDB(DB_KEYS.sponsorships).filter(x => x.id !== sponsorId));
+                showToast('Apadrinhamento encerrado. Obrigado por todo o apoio! 💛');
+                refreshCurrentView();
+            });
+        }
+
+        // Initialization
+        window.addEventListener('DOMContentLoaded', () => {
+            initDB();
+            setupEnvironment();
+        });
+    </script>
+</body>
+</html>
